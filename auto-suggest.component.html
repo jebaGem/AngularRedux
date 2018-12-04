@@ -1,0 +1,33 @@
+<header class="flex-container flex-center" id="autoSuggest">
+  <div class="width-25"></div>
+  <div appClickOutside (clickOutside)="closeDropDown()">
+    <div class="width-half">
+      <form [formGroup]="stateForm">
+        <input #autoSuggestSearch id="autoSuggestSearch" autofocus placeholder="{{'Search_Asset_Placeholder'|translate}}"
+          formControlName="search" autocomplete="off" class="input-underline search-bar form-control"
+          type="text" (keyup.arrowdown)="keyNavigate($event)" (keyup.arrowup)="keyNavigate($event)"
+          (keyup.esc)="keyNavigate($event)" (click)="openDropDown()" (keydown)="openDropDown()"
+          (keyup)="openDropDown()" (keyup.enter)="keyConfirm($event)" (input)="refineKeySelected()"
+          title="{{query}}" [ngClass]="{'error-indicator' : rowHasError()}">
+        <div class="error-required" *ngIf="!value && !stateForm.controls.search.value && stateForm.controls.search.touched ">
+          {{"General_Label__Asset_Required_Field"| translate}}
+        </div>
+
+        <ng-container *ngIf="!value && stateForm.controls.search.value && stateForm.controls.search.touched ">
+          <div class="invalid-asset"> {{"Please_select_valid_asset"| translate}}</div>
+        </ng-container>
+      </form>
+
+      <div *ngIf="showDropDown" class="search-drop-down" id="itemList" [ngStyle]="{'top': dropdownTopPosition}">
+        <div (mousedown)="selectValue(model)" [ngClass]="{'search-results': true, 'selected': model.modelId === selectedId}"
+          *ngFor="let model of brandModels | searchFilter: query:'modelName'" [attr.id]="model.modelId"
+          title="{{model.modelName}}">
+          <a [innerHTML]="model.modelName | letterBold: query">
+
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="width-25 "></div>
+</header>
