@@ -1,0 +1,466 @@
+@import "../../assets/css/variables/variables";
+@import "../../assets/css/helpers/mixins";
+
+@mixin card-text() {
+  font-family: $effra-light;
+  font-size: 14px;
+  font-weight: 300;
+  color: $black;
+  margin-left: 35px;
+}
+
+.search-block {
+  padding: 47px $space-base $space-larger $space-base;
+
+  label {
+    margin-bottom: 9px;
+  }
+
+  @include maxscreen($screen-sm) {
+    padding: 15px $space-smallest $space-small $space-smallest;
+
+    label {
+      display: none;
+    }
+  }
+
+  .form-group {
+    display: inline-block;
+    margin-right: $space-small;
+    margin-bottom: 0;
+    vertical-align: top;
+
+    input {
+      display: inline-block;
+      padding-right: 55px;
+      border-radius: 0;
+
+      &:not(.multi-input) {
+        width: 100%;
+      }
+    }
+
+    .inline-form-wrapper {
+      position: relative;
+      display: inline-block;
+    }
+
+    .search-input-wrapper {
+      position: relative;
+      display: flex;
+    }
+
+    &.search-input {
+      position: relative;
+      margin-right: 0;
+      margin-bottom: 0;
+      margin-top: -1px;
+      min-width: 180px;
+
+      &:not(.multi-input) {
+        width: calc(100% - 205px);
+        max-width: 400px;
+
+        .inline-form-wrapper {
+          width: 100%;
+        }
+
+        @include maxscreen($screen-sm) {
+          max-width: 100%;
+
+          input {
+            width: 100%;
+          }
+        }
+      }
+
+      &.multi-input {
+        @include maxscreen($screen-md) {
+          margin-top: $space-smallest;
+        }
+
+        input:first-of-type {
+          padding-right: 12px;
+          border-right: 0;
+          border-radius: 4px 0 0 0;
+
+          &.last-input {
+            border-radius: 0 4px 0 0;
+          }
+        }
+
+        @include maxscreen($screen-sm) {
+          margin-top: -1px;
+
+          .inline-form-wrapper {
+            width: 100%;
+
+            input {
+              width: 100%;
+
+              &:first-of-type,
+              &.last-input {
+                margin-bottom: 0;
+                border-radius: 0;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  button.btn-search {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    height: 100%;
+    max-height: 50px;
+    width: 50px;
+    padding-top: $space-smallest;
+    background-color: $blue-primary;
+    vertical-align: bottom;
+    border-radius: 0 4px 0 0;
+
+    &[disabled] {
+      background-color: $switchDisableColor;
+      color: $whiteOpacity;
+    }
+
+    @include maxscreen($screen-md) {
+      width: 40px;
+      max-height: 40px;
+      top: 0;
+      bottom: none;
+      padding-top: 0;
+      padding-bottom: 0;
+      line-height: 100%;
+    }
+
+    @include maxscreen($screen-sm) {
+      border-radius: 0;
+    }
+
+    .fa-search {
+      font-size: $font-size-large;
+      color: #fff;
+
+      @include maxscreen($screen-md) {
+        font-size: $font-size-base;
+      }
+    }
+  }
+
+  .validation {
+    color: $error-color;
+    font-family: $effra-light;
+    font-size: 14px;
+    position: absolute;
+    bottom: -20px;
+
+    @include maxscreen($screen-sm) {
+      bottom: auto;
+    }
+  }
+
+  .error-indicator {
+    border-bottom: solid 2px $error-color;
+  }
+
+  @include maxscreen($screen-sm) {
+    .row {
+      .col-xs-12 {
+        .form-group {
+          width: 100%;
+          margin-bottom: 0;
+        }
+      }
+    }
+  }
+}
+
+.customer-box-results {
+  padding: 53px $space-base 53px;
+  background-color: #f0ecee;
+  box-shadow: inset 0px 5px 5px 0 rgba(0, 0, 0, 0.1);
+  position: relative;
+
+  &.mt-30 {
+    padding-top: $space-base;
+
+    p {
+      margin-left: $space-small;
+      margin-bottom: $space-small;
+    }
+  }
+
+  .label-small {
+    display: none;
+  }
+
+  @include maxscreen($screen-sm) {
+    .table-header {
+      display: none;
+    }
+
+    .label-small {
+      display: block;
+      padding-left: 50px;
+      color: $black;
+      font-size: 20px
+    }
+
+    .container-radio {
+      position: absolute;
+      top: 3px;
+    }
+
+    .checkboxDiv {
+      margin-right: 8px;
+    }
+
+    .search-customer-small {
+      padding-left: 50px;
+    }
+
+    .CSTable {
+      .row {
+
+        .col-sm-3,
+        .col-sm-2 {
+          padding-bottom: $space-small;
+        }
+      }
+    }
+
+    .search-input {
+      width: 100%;
+    }
+
+    .table-data {
+      span {
+        font-size: 16px;
+      }
+    }
+  }
+}
+
+.table-header {
+  margin-bottom: 15px;
+  line-height: 1;
+
+  span {
+    font-family: $effra-medium;
+    font-size: $font-size-thead;
+    color: $black;
+    word-wrap: break-word;
+  }
+
+  .col-sm-2,
+  .col-sm-3 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.table-data {
+  ul {
+    border-top: solid 1px lightgray;
+    padding: 0;
+    list-style: none;
+
+    li {
+      &:not(.disabled) {
+        cursor: pointer;
+      }
+
+      div>div:not(.checkboxDiv) {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+  }
+
+  span {
+    font-family: $effra-light;
+    font-size: $font-size-tbody;
+    color: #333333;
+  }
+}
+
+.intrest-quick {
+  color: $black;
+  padding-left: 31px;
+  font-size: 20px;
+  font-family: $effra;
+}
+
+.customer-box-common {
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
+  color: $black;
+  font-size: 20px;
+  text-align: left;
+  font-family: $effra-light;
+}
+
+.checkboxDiv {
+  position: relative;
+  top: 2px;
+  width: 20px;
+  height: 20px;
+  margin: 0 15px 0 $space-small;
+  display: inline-block;
+  vertical-align: text-bottom;
+
+  /* Hide the browser's default radio button */
+  .container-radio input {
+    position: absolute;
+    opacity: 0;
+    left: -9999px;
+  }
+
+  /* Create a custom radio button */
+  .container-radio .checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 20px;
+    width: 20px;
+    background-color: $white;
+    border-radius: 50%;
+  }
+
+  /* When the radio button is checked, add a blue background */
+  .container-radio input:checked {
+    ~.checkmark {
+      background-color: $radioSelectColor;
+    }
+
+    &[disabled] {
+      ~.checkmark {
+        background-color: $switchDisableColor;
+        border-color: $switchDisableColor;
+        opacity: 1;
+      }
+    }
+  }
+
+  /* Create the indicator (the dot/circle - hidden when not checked) */
+  .container-radio .checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+  }
+
+  /* Show the indicator (dot/circle) when checked */
+  .container-radio input:checked~.checkmark:after {
+    display: block;
+  }
+
+  /* Style the indicator (dot/circle) */
+  .container-radio .checkmark:after {
+    top: 5px;
+    left: 5.3px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #fff;
+  }
+}
+
+.customer-box-table-data {
+  ul {
+    list-style: none;
+  }
+}
+
+.CSTable {
+  line-height: 50px;
+  border-bottom: 1px solid lightgray;
+}
+
+.customer-box-table {
+  padding-bottom: 50px;
+  background-color: #f0ecee;
+  box-shadow: inset 0 5px 5px 0 rgba(0, 0, 0, .1);
+}
+
+.activeRow {
+  background: white;
+  box-shadow: 0px 3px 8px 0px rgba(0, 0, 0, 0.2);
+}
+
+
+
+.customer-box-termsconditions {
+  width: 100%;
+  position: relative;
+
+  p {
+    display: inline-block;
+    width: auto;
+    margin: 0;
+    padding: $space-smaller 0 $space-smaller $space-larger;
+    line-height: 20px;
+  }
+
+  .container-terms {
+    padding-left: $space-base;
+
+    .accept-text-link {
+      vertical-align: middle;
+      cursor: default;
+      font-size: $font-size-paragraph;
+    }
+
+    .info-icon {
+      vertical-align: sub;
+
+      &:hover {
+        cursor: pointer;
+      }
+    }
+  }
+
+  @include eupp-checkbox('terms');
+
+  .container-terms {
+    padding-left: $space-base;
+
+    .checkmark {
+      top: 0;
+    }
+  }
+}
+
+.accept-text {
+  @include card-text();
+}
+
+.info-icon {
+  display: inline-block;
+  position: relative;
+  top: 2px;
+  margin-left: 8px;
+}
+
+.checkboxDiv {
+  label:hover input:not(:checked)~.checkmark {
+    border: 2px solid $blue-primary
+  }
+
+  .container-radio.disable-radio {
+    span {
+      background-color: $lightgrey-color;
+    }
+  }
+
+  .container-radio.disable-radio:hover input:not(:checked)~.checkmark {
+    border: 2px solid $lightgrey-color;
+  }
+
+}

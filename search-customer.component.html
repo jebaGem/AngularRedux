@@ -1,0 +1,199 @@
+<div [ngSwitch]="loadingState$ | async">
+  <div *ngSwitchCase="'errorOccurred'">
+    <div class="panel panel-default">
+      {{"An_error_occurred" | translate}}
+    </div>
+  </div>
+  <div *ngSwitchCase="'loading'" class="panel">
+    <app-spinner></app-spinner>
+  </div>
+  <div *ngSwitchDefault>
+    <div class="search-customer-component panel panel-default" [class.panel-locked]="searchForm.disabled"
+      id="searchCustomer">
+      <div class="panel-heading">
+        <h2>
+          <span class="fas fa-user"></span>
+          {{'Customer_Title_Search' | translate}}
+        </h2>
+
+        <div *ngIf="isLocked" class="locked-data" id="searchCustomerLockInfo" (click)="toggleLockBubble(true, $event)"
+          (mouseenter)="toggleLockBubble(true, $event)" (mouseleave)="toggleLockBubble(false, $event)">
+          <span class="fas fa-lock"></span>{{"Data_locked" | translate}}
+        </div>
+        <app-tooltip [displayProperties]="
+              lockBubbleDisplay" *ngIf="(showLockedBubble$ | async)"
+          (close)="toggleLockBubble(false)" [ngStyle]="lockBubbleDisplay.tooltipPosition"
+          [@tooltipAnimation] [title]="'Locked' | translate">
+          {{"Search_customer_locked_description"| translate}}
+        </app-tooltip>
+      </div>
+
+      <div class="panel-body">
+        <form name="searchForm" [formGroup]="searchForm" id="searchForm">
+          <div class="search-block">
+            <div class="row">
+              <div class="col-xs-12">
+                <div class="form-group">
+                  <label for="searchByList">{{'General_Search_By' | translate}}</label>
+                  <select id="searchByList" class="form-control" formControlName="by">
+                    <option value="id">{{'General_ChamberOfCommerceNumber' | translate}}</option>
+                    <option value="name">{{'General_CompanyName' | translate}}</option>
+                    <option value="postalCode">{{'Postal_code_and_house_number' | translate}}</option>
+                  </select>
+                </div>
+                <div [ngClass]="{'form-group search-input': true, 'multi-input': seachByAddress}">
+                  <label>{{'General_Search' | translate}}</label>
+                  <div class="search-input-wrapper">
+                    <div class="inline-form-wrapper">
+                      <input type="text" formControlName="key" class="form-control effect-1" id="searchValue"
+                        appFormatOrganizationIdDirective appAllowedKeys [locale]="locale"
+                        (keyup.enter)="performSearch()" placeholder="{{isLocked ? '' : searchPlaceholder | translate}}"
+                        [ngClass]="{'multi-input': seachByAddress, 'error-indicator' : (key.touched && key.errors)}">
+                      <span class="focus-border"></span>
+                    </div>
+                    <div class="inline-form-wrapper" *ngIf="seachByAddress">
+                      <input type="text" formControlName="houseNumber" class="form-control multi-input last-input effect-1"
+                        id="searchHouseNumber" appNumberOnly (keyup.enter)="performSearch()"
+                        placeholder="{{'House_Number' | translate}}">
+                      <span class="focus-border"></span>
+                    </div>
+                    <button (click)="performSearch()" class="btn btn-search" id="searchButton"
+                      [disabled]="searchForm.disabled">
+                      <span class="fa fa-search"></span>
+                    </button>
+                  </div>
+                  <div class="validation errors-search-customer" *ngIf="showValidation">
+                    <ng-container *ngIf="key.touched && key.errors">
+                      <span *ngIf="key.errors.required">
+                        {{'General_Label_RequiredField' | translate}}
+                      </span>
+                      <span *ngIf="key.errors.inputLength">
+                        {{'SearchCustomer_InvalidInputLength' | translate}}
+                      </span>
+                      <span *ngIf="key.errors.pattern">
+                        {{'Invalid_Postalcode' | translate}}
+                      </span>
+                    </ng-container>
+                    <ng-container *ngIf="houseNumber.touched && houseNumber.errors">
+                      <span *ngIf="houseNumber.errors.pattern">
+                        {{'Please_enter_valid_house_number' | translate}}
+                      </span>
+                    </ng-container>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <section [ngSwitch]="loadingState$ | async" id="searchResults">
+            <div *ngSwitchCase="'searchError'" class="customer-box-results">
+              {{"An_error_occurred" | translate}}
+            </div>
+            <div *ngSwitchCase="'searchInProgress'" class="customer-box-results">
+              <app-spinner></app-spinner>
+            </div>
+            <div *ngSwitchDefault>
+              <div [ngClass]="{'customer-box-results': true, 'mt-30': results.length > visibleCustomers }"
+                *ngIf="results">
+                <div *ngIf="results.length">
+                  <div *ngIf="results.length > visibleCustomers" class="result-count">
+                    <p><strong>{{results.length}}</strong> {{'Search_Result' | translate}}</p>
+                  </div>
+                  <div class="table-header">
+                    <div class="row">
+                      <div class="col-sm-4">
+                        <div class="checkboxDiv"></div>
+                        <span>{{'General_CompanyName' | translate}}</span>
+                      </div>
+                      <div class="col-sm-2">
+                        <span>{{'General_ChamberOfCommerceNumber' | translate}}</span>
+                      </div>
+                      <div class="col-sm-3">
+                        <span>{{'General_Address' | translate}}</span>
+                      </div>
+                      <div class="col-sm-1">
+                        <span>{{'General_PostalCode' | translate}}</span>
+                      </div>
+
+                      <div class="col-sm-2">
+                        <span>{{'City' | translate}}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="table-data">
+                    <ul>
+                      <li class="CSTable" *ngFor="let customer of results.slice(0, visibleCustomers); let i = index;"
+                        [ngClass]="{'activeRow': (customerId === customer.id && customerName === customer.name), 'disabled': searchForm.disabled}"
+                        (click)="selectRow(customer)">
+                        <div class="row">
+                          <div class="col-sm-4">
+                            <span class="label-small">{{'General_CompanyName' | translate}}</span>
+                            <div class="checkboxDiv">
+                              <label class="container-radio" [ngClass]="{'disable-radio' : isLocked}">
+                                <span class="checkmark"></span>
+                                <input [attr.id]="'searchCustomerCheckbox' + (i + 1)" type="radio"
+                                  formControlName="customer" [value]="customer.id" [checked]="(selectedCustomer$ | async)?.id === customer.id && customerName === customer.name">
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <span [attr.id]="'searchCustomerName' + (i + 1)" [innerHTML]="customer.name | searchHighlight: key.value: by.value === 'name'"></span>
+                          </div>
+                          <div class="col-sm-2">
+                            <span class="label-small">{{'General_ChamberOfCommerceNumber' |
+                              translate}}</span>
+                            <span class="search-customer-small" [attr.id]="'searchCustomerId' + (i + 1)"
+                              [innerHTML]="customer.id | searchHighlight: key.value: by.value === 'id'"></span>
+                          </div>
+                          <div class="col-sm-3">
+                            <span class="label-small">{{'General_Address' | translate}}</span>
+                            <span class="search-customer-small" [attr.id]="'searchCustomerStreet' + (i + 1)"
+                              [innerHTML]="customer.streetAddress | searchHighlight: key.value: by.value === 'address'"></span>
+                          </div>
+                          <div class="col-sm-1">
+                            <span class="label-small">{{'General_PostalCode' | translate}}</span>
+                            <span class="search-customer-small" [attr.id]="'searchCustomerPostalCode' + (i + 1)"
+                              [innerHTML]="customer.address.postalCode | searchHighlight: key.value: by.value === 'address'"></span>
+                          </div>
+                          <div class="col-sm-2">
+                            <span class="label-small">{{'City' | translate}}</span>
+                            <span class="search-customer-small" [attr.id]="'searchCustomerCity' + (i + 1)"
+                              [innerHTML]="customer.address.city | searchHighlight: key.value: by.value === 'address'"></span>
+                          </div>
+                        </div>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div *ngIf="!results.length">
+                  <p class="text-center accept-text">{{'SearchCustomer_Customers_Not_Found' |
+                    translate
+                    }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+          <div class="customer-box-termsconditions" *ngIf="results && results.length  && nlSetup"
+            id="termsConditions">
+
+            <p>
+              <label id="termsConditionsLabel" class="container-terms" for="acceptTerms">
+                <input type="checkbox" id="acceptTerms" name="acceptTerms" formControlName="consentChecked">
+                <span class="accept-text-link">{{'Customer_search_agreement_message'| translate}}</span>
+                <span class="checkmark" id="termsConditionsCheckMark"></span>
+              </label>
+              <i (mouseenter)="showAgreementMessage(true, $event)" (mouseleave)="showAgreementMessage(false, $event)"
+                class="fas fa-info-circle info-icon" (click)="showAgreementMessage(true, $event)"
+                id="customerConsentIcon"></i>
+            </p>
+            <app-tooltip [displayProperties]="showAgreementTooltipProps" *ngIf="showAgreementMessageFlag"
+              (close)="showAgreementMessage(false)" [ngStyle]="showAgreementTooltipProps.tooltipPosition"
+              [@tooltipAnimation] id="showAgrgrementMessageId">
+              {{ 'Agreement_text' | translate }}
+            </app-tooltip>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>

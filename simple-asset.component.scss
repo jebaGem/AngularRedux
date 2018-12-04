@@ -1,0 +1,296 @@
+@import "../../assets/css/variables/variables";
+@import "../../assets/css/helpers/mixins";
+@import "../../assets/css/helpers/extends";
+
+
+
+.asset-container {
+  position: relative;
+  line-height: 1.42857143;
+
+  .col-md-6 {
+    padding-left: $space-base;
+  }
+
+  .panel {
+    position: static;
+  }
+
+  .panel-body {
+    padding: 0;
+  }
+
+  .error {
+    position: absolute;
+  }
+
+  .panel-loading {
+    min-height: 256px;
+  }
+
+  .simple-asset-form {
+    overflow: visible;
+    height: 100%;
+    min-height: 100%;
+    position: relative;
+    margin: 0;
+
+    .type-header {
+      width: 31%;
+      margin-bottom: 0;
+      margin-right: 0;
+    }
+
+    .desc-header {
+      width: 32%;
+      margin-bottom: 0;
+      margin-right: 0;
+    }
+
+    .year-select-header {
+      width: 130px;
+      margin-bottom: 0;
+      margin-right: 0;
+    }
+
+    .quantity-header {
+      width: 10%;
+      margin-bottom: 0;
+      margin-right: 0;
+    }
+
+    .unit-price-header {
+      margin-bottom: 0;
+      margin-right: 0;
+    }
+
+    .year-select select {
+      width: 110px;
+    }
+
+    @include maxscreen($screen-lg) {
+      @media (min-width: $screen-md) {
+
+        [class*='description'],
+        select {
+          width: 180px;
+        }
+
+        .currency-symbol-right .unit-price {
+          width: 150px;
+        }
+      }
+    }
+  }
+
+  .add-assets {
+    @include add-row-link();
+
+    @include minscreen($screen-md) {
+      height: 35px;
+    }
+
+    &.nl-setup {
+      display: none;
+    }
+  }
+
+  .form-assets {
+    position: relative;
+    margin-bottom: 14px;
+    @extend %noselect;
+
+    [class^='errors'] {
+      bottom: -20px;
+    }
+
+    .errors-simple-asset-description {
+      position: absolute;
+      color: $error-color;
+      font-family: $effra-light;
+    }
+
+    .errors-simple-asset-quantity {
+      position: absolute;
+      color: $error-color;
+      font-family: $effra-light;
+      left: -5px;
+      width: 100%;
+
+      div {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+
+    .errors-simple-asset-unitprice {
+      position: absolute;
+      color: $error-color;
+      font-family: $effra-light;
+    }
+
+    .error-right {
+      left: auto;
+      right: 0;
+      bottom: -22px;
+    }
+  }
+
+  .delete-row {
+    margin-right: 0;
+    margin-top: 14px;
+    vertical-align: top;
+
+    button {
+      margin-left: $space-smaller;
+      padding: 0;
+    }
+  }
+
+  // based on currency symbol position align input box and currency symbol
+  .currency-symbol-left {
+    input {
+      padding-right: $space-smaller;
+    }
+  }
+
+  .currency-symbol-right {
+    .currency-symbol {
+      left: initial;
+      right: 9px;
+      top: 14px;
+    }
+
+    input {
+      padding-right: 35px;
+    }
+  }
+}
+
+.left-block {
+  label:not(.first-label) {
+    display: none;
+  }
+
+  .total-block--sm {
+    display: none;
+  }
+
+  div:first-child .form-assets {
+    .currency-symbol-right {
+      .currency-symbol {
+        top: $space-base;
+      }
+    }
+
+    .delete-row {
+      margin-bottom: 12px;
+      vertical-align: bottom;
+    }
+  }
+}
+
+@media all and (-ms-high-contrast: none),
+(-ms-high-contrast: active) {
+  .full-calc.asset-container {
+    line-height: 1.49;
+  }
+
+  /* IE10+ CSS styles go here */
+  .delete-row {
+    i {
+      position: absolute;
+      top: -13px;
+    }
+  }
+
+  .left-block {
+    .form-assets {
+      margin-bottom: $space-smallest
+    }
+  }
+
+  .left-block div:first-child .form-assets {
+    margin-bottom: 18px;
+
+    .delete-row {
+      i {
+        top: 39px;
+      }
+    }
+  }
+}
+
+.tool-tip-simple-asset {
+  min-width: 235px;
+  max-width: 250px;
+  z-index: 99999;
+  position: absolute;
+}
+
+.tool-tip-mamimum-row {
+  z-index: 9999;
+  box-shadow: 1px 2px 6px 0 rgba(0, 0, 0, 0.5);
+}
+
+@-moz-document url-prefix() {
+  .full-calc.asset-container {
+    line-height: 1.4049;
+  }
+}
+
+.hide-asset {
+  display: none;
+}
+
+@include responsive-columns();
+/* The container */
+
+.cisco-agree-box {
+  margin-top: $space-base;
+
+  @include maxscreen($screen-md) {
+    font-size: 16px;
+    margin-top: 0;
+    padding: .5rem 1rem 2rem $space-smaller;
+  }
+
+  @include maxscreen($screen-sm) {
+    padding-left: 1rem;
+  }
+}
+
+@include eupp-checkbox('agree');
+
+@include maxscreen($screen-md) {
+  .form-group.unit-price-group.cisco-asset {
+    display: inline-flex;
+    flex-direction: column;
+    width: auto;
+    padding-right: 0;
+
+    @include minscreen($screen-sm) {
+      padding-left: 0;
+    }
+
+    label {
+      width: auto;
+    }
+
+    &.currency-symbol-left {
+      input {
+        padding-left: $space-small;
+        padding-right: $space-smallest;
+      }
+    }
+
+    .errors-simple-asset-unitprice {
+      bottom: 0;
+
+      @include maxscreen($screen-md) {
+        bottom: -20px;
+      }
+    }
+  }
+}

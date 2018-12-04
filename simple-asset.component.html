@@ -1,0 +1,218 @@
+<div [ngSwitch]="loadingState$ | async">
+  <div *ngSwitchCase="'errorOccurred'">
+    <div class="panel panel-default">
+      {{"An_error_occurred" | translate}}
+    </div>
+  </div>
+  <div>
+    <div class="full-calc asset-container">
+      <div class="panel panel-default" [class.panel-locked]="simpleAssetForm.disabled"
+        *ngSwitchCase="'loadingComplete'">
+        <div class="panel-heading">
+          <h2>
+            <span class="fas fa-cubes" aria-hidden="true"></span>
+            {{"Assets" | translate}}
+          </h2>
+          <div *ngIf="simpleAssetForm.disabled" class="locked-data" id="simpleAssetsLockInfo"
+            (click)="toggleLockBubble(true, $event)" (mouseenter)="toggleLockBubble(true, $event)"
+            (mouseleave)="toggleLockBubble(false, $event)">
+            <span class="fas fa-lock"></span>{{"Data_locked" | translate}}
+          </div>
+          <app-tooltip [displayProperties]="
+              lockBubbleDisplay" *ngIf="(showLockedBubble$ | async)"
+            (close)="toggleLockBubble(false)" [ngStyle]="lockBubbleDisplay.tooltipPosition"
+            [@tooltipAnimation] [title]="'Locked' | translate">
+            {{"Simple_assets_locked_description"| translate}}
+          </app-tooltip>
+        </div>
+        <div class="panel-body">
+          <div class="row simple-asset-form">
+            <form #assetFormRow [formGroup]="simpleAssetForm" novalidate>
+              <div class="col-md-{{nordicSetup ? 8 : 12}} left-block">
+                <div formArrayName="assetFormArray" *ngFor="let row of assetFormArray.controls; let i = index;">
+                  <div [formGroupName]="i" class="form-assets {{nlSetup ? 'cisco-asset' : 'nordic-asset'}}">
+                    <div class="form-group" *ngIf="nordicSetup">
+                      <label [ngClass]="{'first-label' : i === 0}" id="assetTypeLabel">{{"Type" |
+                        translate}}
+                      </label>
+                      <select formControlName="assetType" class="form-control asset-type" [value]="row.controls.assetType.value"
+                        (change)="rowChanged(i)" [attr.id]="'assetType_' + (i+1)">
+                        <ng-container *ngFor="let assetType of assetTypes$ | async">
+                          <option *ngIf="assetType.name" [value]="assetType.name">
+                            {{assetType.name}}
+                          </option>
+                        </ng-container>
+
+                      </select>
+                    </div>
+                    <div class="hide-asset" *ngIf="nlSetup">
+                      <label [ngClass]="{'first-label' : i === 0}" id="modelTypeLabel">{{"Model" |
+                        translate}}
+                      </label>
+                      <app-auto-suggest [attr.id]="'assetBrandModel_' + (i + 1)" formControlName="brandModel"
+                        (change)="rowChanged(i)" [value]="row.controls.brandModel.value"
+                        [indexProperty]="'modelId'" [searchProperty]="'modelName'" [brandModels]="brandModels$ | async"></app-auto-suggest>
+                      <input type="hidden" formControlName="brandName" [value]="(brandModels$ | async | searchFilter: row.controls.brandModel.value:'modelId')[0].brandName" />
+                    </div>
+
+                    <div class="form-group" *ngIf="nordicSetup">
+                      <label [ngClass]="{'first-label' : i === 0}" id="assetDescriptionLabel">{{"Description"
+                        | translate}}</label>
+                      <input formControlName="description" [ngClass]="{'form-control effect-1': true, 'description-small': supports999Assets, 'description': nlSetup || !supports999Assets}"
+                        maxlength="37" (input)="rowChanged(i)" [attr.id]="'assetDescription_' + (i + 1)"
+                        [ngClass]="{'error-indicator' : rowHasError(row.controls.description)}" />
+                      <span class="focus-border"></span>
+                      <div class="errors-simple-asset-description" *ngIf="rowHasError(row.controls.description)">{{"General_Label_RequiredField"
+                        | translate}}</div>
+                    </div>
+                    <!--  Year is not required for NL and SE
+                      <div class="form-group year-select" *ngIf="!nlSetup && !nordicSetup">
+                      <label [ngClass]="{'first-label' : i === 0}" id="buildYearLabel">{{"Building_Year"
+                        | translate}}</label>
+                      <select formControlName="year" class="form-control" (change)="rowChanged(i)"
+                        [attr.id]="'buildYear_' + (i + 1)">
+                        <option *ngFor="let year of buildingYears" [value]="year">
+                          {{year}}
+                        </option>
+                      </select>
+                    </div> -->
+                    <div class="form-group" *ngIf="nordicSetup">
+                      <label [ngClass]="{'first-label' : i === 0}" id="assetQuantityLabel">{{"Quantity"
+                        | translate}}</label>
+                      <input formControlName="quantity" [ngClass]="{'form-control effect-1': true, 'quantity-large': supports999Assets, 'quantity': nlSetup || !supports999Assets, 'error-indicator': rowHasError(row.controls.quantity)}"
+                        (input)="rowChanged(i)" appNumberOnly [maxlength]="quantityMaxLength"
+                        [attr.id]="'assetQuantity_' + (i + 1)" placeholder={{placeholderQuantity}} />
+                      <span class="focus-border"></span>
+                      <div class="errors-simple-asset-quantity" *ngIf="rowHasError(row.controls.quantity)"
+                        (mouseenter)="showHideQuantityBubble(true,i)" (mouseleave)="showHideQuantityBubble(false,i)">
+                        <div *ngIf="row.controls.quantity.errors.required">{{"General_Label_RequiredField"
+                          | translate}}</div>
+                        <div *ngIf="!row.controls.quantity.errors.required">{{"Asset_minimum_quantity_value"
+                          | translate}}</div>
+                        <!--Show bubble on hovering the error Quantity-->
+                        <app-tooltip class="tool-tip-simple-asset" [title]="'Error_in_Quantity_field' | translate"
+                          [displayProperties]="quantityInputBubbleDetails" *ngIf="rowHasError(row.controls.quantity) && showQuantityBubble && (this.bubbleIndex===i)"
+                          (close)="showHideQuantityBubble(false,i)" [ngStyle]="quantityInputBubbleDetails.tooltipPosition"
+                          id="quantityInputBubbleDetails">
+                          <div *ngIf="row.controls.quantity.errors.required">{{"General_Label_RequiredField"
+                            | translate}}</div>
+                          <div *ngIf="!row.controls.quantity.errors.required">{{"Asset_minimum_quantity_value"
+                            | translate}}</div>
+                        </app-tooltip>
+                      </div>
+                    </div>
+                    <div class="form-group unit-price-group {{nlSetup ? 'cisco-asset' : 'nordic-asset'}}"
+                      [ngClass]="currencySymbolPosition$ | async">
+                      <label [ngClass]="{'first-label' : i === 0}" id="assetUnitPriceLabel">{{"Unit_price"
+                        | translate}}</label>
+                      <span class="currency-symbol">{{currencySymbol}}</span>
+                      <input formControlName="unitPrice" class="form-control unit-price effect-1"
+                        (input)="rowChanged(i)" appCurrencyOnly [decimalSeparator]="decimalSeparator"
+                        [placeholder]="amountPlaceholder" appFormatCurrencyDirective [ngClass]="{'error-indicator' : rowHasError(row.controls.unitPrice)}"
+                        [attr.id]="'assetUnitPrice_' + (i + 1)" />
+                      <span class="focus-border"></span>
+
+                      <div class="errors-simple-asset-unitprice error-right" *ngIf="rowHasError(row.controls.unitPrice)">
+                        <div *ngIf="row.controls.unitPrice.errors.required">{{"General_Label_RequiredField"
+                          | translate}}</div>
+                        <div *ngIf="!row.controls.unitPrice.errors.required">{{"Asset_minimum_unitprice_value"
+                          | translate}}</div>
+                        <!--Show bubble on hovering the error unitprice-->
+                        <app-tooltip class="tool-tip-simple-asset" [title]="'Error_in_amount_field' | translate"
+                          [displayProperties]="amountInputBubbleDetails" *ngIf="rowHasError(row.controls.unitPrice) && showUnitPriceBubble && (this.bubbleIndex===i)"
+                          (close)="showHideUnitPriceBubble(false,i)" [ngStyle]="amountInputBubbleDetails.tooltipPosition"
+                          id="amountInputBubbleDetails">
+                          <div *ngIf="row.controls.unitPrice.errors.required">{{"General_Label_RequiredField"
+                            | translate}}</div>
+                          <div *ngIf="!row.controls.unitPrice.errors.required">{{"Asset_minimum_unitprice_value"
+                            | translate}}</div>
+                        </app-tooltip>
+                      </div>
+                    </div>
+                    <div class="form-group delete-row" *ngIf="nordicSetup">
+                      <button type="button" [attr.name]="'deleteAsset_' + (i + 1)" (click)="deleteRow(i)"
+                        [attr.id]="'deleteAsset_' + (i + 1)" [disabled]="simpleAssetForm.disabled">
+                        <span class="fas fa-trash-alt"></span>
+                      </button>
+                    </div>
+                    <!-- shows only in small screens START -->
+                    <div class="total-block--sm form-group align-right" *ngIf="nordicSetup"
+                      [ngClass]="currencySymbolPosition$ | async">
+                      <app-display-amount [site]="site$ | async" [amount]="(assetFormArray$ | async)?.controls[i].controls.totalAmount.value"
+                        [currencySymbol]="currencySymbol" [decimalSeparator]="decimalSeparator"
+                        [isTotal]="false" [attr.id]="'assetRowTotal_' + (i + 1)"></app-display-amount>
+                    </div>
+                    <!-- shows only in small screens END -->
+
+                  </div>
+                </div>
+
+                <div class="color-error error-message--text" *ngIf="!assetFormArray.valid && showCompletePreviousError"
+                  id="assetAddRowError">
+                  <span>{{"Please_complete_previous_row" | translate}}</span>
+                </div>
+
+                <div class="color-error error-message--text" *ngIf="showMaxRowsReached" id="assetMaxRowError">
+                  <span>{{"Maximum_rows_reached" | translate}}</span>
+                </div>
+
+                <div class="color-error error-message--text" *ngIf="!showMaxRowsReached && showMaxAssetsReached"
+                  id="assetMaxReachedError">
+                  <span>{{"Maximum_assets_reached" | translate}}</span>
+                </div>
+
+                <div class="add-assets" [ngClass]="{'nl-setup': nlSetup}">
+                  <a (mouseenter)="showMaximumRowBubble(true)" (mouseleave)="showMaximumRowBubble(false)"
+                    href="javascript:void(0)" (click)="addAsset()" id="addAssetRow" [ngClass]="{'disabled': simpleAssetForm.disabled }"
+                    *ngIf="nordicSetup">
+                    <i class="fas fa-plus-circle"></i>{{"Add_Asset" | translate}}</a>
+                </div>
+
+                <div class="cisco-agree-box" *ngIf="nlSetup" id="ciscoAgree">
+                  <label class="container-agree first-label" id="ciscoAgreeLabel" for="ciscoAgreeBox">
+                    <input [checked]="assetConditionAccepted$| async" type="checkbox" id="ciscoAgreeBox"
+                      name="ciscoAgreeBox" (change)="assetConsentCheck($event.target)" [disabled]="simpleAssetForm.disabled">
+                    <span class="accept-text-link" id="ciscoAgreeBoxText">{{'Cisco_accept_asset_conditions'|
+                      translate}}</span>
+                    <span class="checkmark" id="ciscoAgreeBoxCheckMark"></span>
+                  </label>
+                </div>
+              </div>
+              <div class="right-block" *ngIf="nordicSetup">
+                <label class="right-block-total" id="assetTotalLabel">{{"Total" | translate}}</label>
+                <div class="total-block-right" formArrayName="assetFormArray" *ngFor="let row of (assetFormArray$ | async)?.controls; let i = index;">
+                  <div [formGroupName]="i" class="total-block" [ngClass]="currencySymbolPosition$ | async">
+                    <app-display-amount [site]="site$ | async" [amount]="row.controls.totalAmount.value"
+                      [currencySymbol]="currencySymbol" [decimalSeparator]="decimalSeparator"
+                      [isTotal]="false" [attr.id]="'assetRowTotal_' + (i + 1)"></app-display-amount>
+                  </div>
+                </div>
+
+                <div class="total-amount-container">
+                  <div class="total-amount-bottom" [ngClass]="currencySymbolPosition$ | async">
+                    <app-display-amount [site]="site$ | async" [amount]="totalAssetAmount$ | async"
+                      [currencySymbol]="currencySymbol" [decimalSeparator]="decimalSeparator"
+                      [isTotal]="true" id="totalAssetAmount"></app-display-amount>
+                  </div>
+                </div>
+              </div>
+            </form>
+
+          </div>
+        </div>
+
+      </div>
+      <!--Show bubble on hovering the error add assset-->
+      <app-tooltip [title]="'Error_asset_count' | translate" class="tool-tip-mamimum-row"
+        [displayProperties]="maximumRowBubbleDetails" *ngIf=" !(maxRows > (assetFormArray$ | async)?.length) && showMaximumNumberRowBubble"
+        (close)="showMaximumRowBubble(false)" [ngStyle]="maximumRowBubbleDetails.tooltipPosition"
+        id="maxAssetBubbleDetails">
+        {{"Error_asset_max_reached" | translate}}
+      </app-tooltip>
+      <!-- Create the div inside the parent div, so that parent div styles will be automatically inherited -->
+      <div *ngSwitchDefault class="panel panel-loading">
+        <app-spinner></app-spinner>
+      </div>
+    </div>
+  </div>
+</div>
